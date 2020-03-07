@@ -1,9 +1,12 @@
 import React, {Component} from "react";
 import {StyleSheet, Text, View} from "react-native";
+import * as FileSystem from 'expo-file-system';
+import {Asset} from 'expo-asset';
 import {createConnection, getRepository} from "typeorm";
 import {Author} from "./entities/author";
 import {Category} from "./entities/category";
 import {Post} from "./entities/post";
+import {Kullanicilar} from "./entities/kullanici";
 
 interface IAppProps {
 
@@ -15,7 +18,7 @@ interface IAppState {
     savedPost: boolean
 }
 
-export default class App extends Component<IAppProps, IAppState> {
+export default class AppRoot extends Component<IAppProps, IAppState> {
     constructor(props: IAppProps) {
         super(props);
         this.state = {
@@ -23,19 +26,43 @@ export default class App extends Component<IAppProps, IAppState> {
             loadedPost: null,
             savedPost: false
         };
-        this.runDemo();
+    }
+
+    componentDidMount() {
+        this.downloadDatabase();
+    }
+
+    async downloadDatabase() {
+        const sqliteDirectory = `${FileSystem.documentDirectory}SQLite`;
+        const {exists, isDirectory} = await FileSystem.getInfoAsync(sqliteDirectory);
+        if (!exists) {
+            await FileSystem.makeDirectoryAsync(sqliteDirectory);
+        } else if (!isDirectory) {
+            throw new Error('SQLite dir is not a directory');
+        }
+
+        const pathToDownloadTo = `${sqliteDirectory}/database.db`;
+        const fileInfo = await FileSystem.getInfoAsync(pathToDownloadTo);
+        if (!fileInfo.exists) {
+            const uriToDownload = Asset.fromModule(require('../assets/db/database.db')).uri;
+            console.log(`Download ${uriToDownload} to ${pathToDownloadTo}`);
+
+            await FileSystem.downloadAsync(uriToDownload, pathToDownloadTo);
+        }
+        await this.runDemo();
     }
 
     connect() {
         return createConnection({
-            database: 'test',
+            database: 'database.db',
             driver: require('expo-sqlite'),
             entities: [
+                Kullanicilar,
                 Author,
                 Category,
                 Post
             ],
-            synchronize: true,
+            synchronize: false,
             type: 'expo'
         });
     }
@@ -43,39 +70,14 @@ export default class App extends Component<IAppProps, IAppState> {
     async runDemo() {
         await this.connect();
 
-        const category1 = new Category();
-        category1.name = "Programming";
+        const kullaniciRepo = getRepository(Kullanicilar);
 
-        const category2 = new Category();
-        category2.name = 'Typescript';
+        const kullanici = new Kullanicilar();
+        kullanici.Isim = 'Robert';
+        kullanici.Soyisim = 'Martin';
+        await kullaniciRepo.save(kullanici);
 
-        const author1 = new Author();
-        author1.name = 'Anonymous';
-
-        const author2 = new Author();
-        author2.name = 'Bananaymous';
-
-        const post1 = new Post();
-        post1.title = 'Control flow based type analysis';
-        post1.text = 'TypeScript 2.0 implements a control flow-based type analysis for local variables and parameters.';
-        post1.categories = [category1, category2];
-        post1.author = author1;
-
-        const postRepo = getRepository(Post);
-        await postRepo.save(post1);
-
-        const post2 = new Post();
-        post2.title = 'AAAAaaaaaaaa';
-        post2.text = ':)';
-        post2.categories = [category1];
-        post2.author = author2;
-        await postRepo.save(post2);
-
-        this.setState({
-            progress: "Post has been saved"
-        });
-
-        const loadedPost = await postRepo.findOne({where: {id: post2.id}, relations: ["author", "categories"]});
+        const loadedPost = await kullaniciRepo.findOne({where: {Id: kullanici.Id}});
 
         if (loadedPost) {
             this.setState({
