@@ -10,7 +10,7 @@
       "web"
     ],
     "packagerOpts": {
-      "assetExts": ["db", "ttf", "png", "jpg","mp4"]
+      "config": "metro.config.js"
     },
     "version": "1.0.0",
     "orientation": "portrait",

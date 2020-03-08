@@ -21,7 +21,8 @@
     "sqlite3": "^4.1.1",
     "typeorm": "^0.2.24",
     "expo-asset": "~8.0.0",
-    "expo-file-system": "~8.0.0"
+    "expo-file-system": "~8.0.0",
+    "metro-config": "latest"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
