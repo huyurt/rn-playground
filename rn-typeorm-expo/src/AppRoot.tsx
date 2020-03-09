@@ -6,7 +6,8 @@ import {createConnection, getRepository} from "typeorm";
 import {Author} from "./entities/author";
 import {Category} from "./entities/category";
 import {Post} from "./entities/post";
-import {Kullanicilar} from "./entities/kullanici";
+import {Kullanici} from "./entities/kullanici";
+import {Siparis} from "./entities/siparis";
 
 interface IAppProps {
 
@@ -57,10 +58,11 @@ export default class AppRoot extends Component<IAppProps, IAppState> {
             database: 'database.db',
             driver: require('expo-sqlite'),
             entities: [
-                Kullanicilar,
                 Author,
                 Category,
-                Post
+                Post,
+                Kullanici,
+                Siparis
             ],
             synchronize: false,
             type: 'expo'
@@ -70,18 +72,12 @@ export default class AppRoot extends Component<IAppProps, IAppState> {
     async runDemo() {
         await this.connect();
 
-        const kullaniciRepo = getRepository(Kullanicilar);
-
-        const kullanici = new Kullanicilar();
-        kullanici.Isim = 'Robert';
-        kullanici.Soyisim = 'Martin';
-        await kullaniciRepo.save(kullanici);
-
-        const loadedPost = await kullaniciRepo.findOne({where: {Id: kullanici.Id}});
+        const siparisRepo = getRepository(Siparis);
+        const loadedPost = await siparisRepo.findOne({where: {Id: 1}, relations: ["Kullanici"]});
 
         if (loadedPost) {
             this.setState({
-                loadedPost: loadedPost
+                loadedPost: JSON.stringify(loadedPost)
             });
         }
     }

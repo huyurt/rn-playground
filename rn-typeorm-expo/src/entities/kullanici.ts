@@ -1,13 +1,14 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn} from "typeorm";
+import {Siparis} from "./siparis";
 
 @Entity('Kullanicilar')
-export class Kullanicilar {
+export class Kullanici {
     @PrimaryGeneratedColumn()
     Id!: number;
 
-    @Column('text', {nullable: false})
+    @Column({type: 'text', nullable: false})
     Isim!: string;
 
-    @Column('text', {nullable: false})
+    @Column({type: 'text', nullable: false})
     Soyisim!: string;
 }
